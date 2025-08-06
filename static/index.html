@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ministry of Truth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d1117 100%);
+            color: #e6edf3;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 1px solid rgba(56, 139, 253, 0.2);
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 50%, #a5a5a5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #7d8590;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 0;
+            margin: 20px 0;
+        }
+
+        .status-connected {
+            color: #3fb950;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-connected::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-error {
+            color: #f85149;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .controls {
+            background: rgba(13, 17, 23, 0.8);
+            border: 1px solid rgba(56, 139, 253, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .mode-toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: rgba(21, 23, 27, 0.9);
+            border: 1px solid rgba(56, 139, 253, 0.3);
+            border-radius: 8px;
+            padding: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-option {
+            padding: 12px 30px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+            letter-spacing: 0.01em;
+        }
+
+        .mode-option.active {
+            background: linear-gradient(135deg, #58a6ff 0%, #388bfd 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.3);
+        }
+
+        .mode-option:not(.active) {
+            color: #7d8590;
+        }
+
+        .filters-section {
+            margin-bottom: 40px;
+        }
+
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-chip {
+            background: rgba(21, 23, 27, 0.6);
+            border: 1px solid rgba(56, 139, 253, 0.2);
+            color: #7d8590;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-chip:hover {
+            border-color: rgba(56, 139, 253, 0.5);
+            color: #58a6ff;
+            transform: translateY(-1px);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(56, 139, 253, 0.15) 100%);
+            border-color: #58a6ff;
+            color: #58a6ff;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.2);
+        }
+
+        .search-section {
+            margin: 40px 0;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 24px;
+            background: rgba(21, 23, 27, 0.8);
+            border: 1px solid rgba(56, 139, 253, 0.2);
+            border-radius: 8px;
+            color: #e6edf3;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-input:focus {
+            border-color: #58a6ff;
+            background: rgba(21, 23, 27, 0.95);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .results {
+            margin-top: 50px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(56, 139, 253, 0.1);
+        }
+
+        .results-count {
+            font-size: 0.9rem;
+            color: #7d8590;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #7d8590;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #f85149;
+            font-size: 1.1rem;
+        }
+
+        .articles-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .article-item {
+            display: flex;
+            gap: 20px;
+            background: rgba(13, 17, 23, 0.6);
+            border: 1px solid rgba(56, 139, 253, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .article-item:hover {
+            border-color: rgba(56, 139, 253, 0.3);
+            background: rgba(13, 17, 23, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .article-image {
+            flex: 0 0 180px;
+            height: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(21, 23, 27, 0.8);
+            order: 2;
+        }
+
+        .article-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .article-item:hover .article-image img {
+            transform: scale(1.05);
+        }
+
+        .article-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(56, 139, 253, 0.1) 0%, rgba(88, 166, 255, 0.05) 100%);
+            color: #7d8590;
+            font-size: 0.8rem;
+        }
+
+        .article-content {
+            flex: 1;
+            order: 1;
+        }
+
+        .article-labels {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ministry-label {
+            background: linear-gradient(135deg, rgba(248, 81, 73, 0.15) 0%, rgba(248, 81, 73, 0.1) 100%);
+            color: #f85149;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(248, 81, 73, 0.2);
+        }
+
+        .cached-label {
+            background: linear-gradient(135deg, rgba(163, 113, 247, 0.15) 0%, rgba(163, 113, 247, 0.1) 100%);
+            color: #a371f7;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(163, 113, 247, 0.2);
+        }
+
+        .article-source {
+            color: #58a6ff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .article-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            color: #e6edf3;
+        }
+
+        .article-description {
+            color: #7d8590;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #656d76;
+            margin-bottom: 12px;
+        }
+
+        .article-url {
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .article-url:hover {
+            color: #79c0ff;
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            background: rgba(251, 188, 5, 0.05);
+            border: 1px solid rgba(251, 188, 5, 0.2);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin: 60px 0 20px;
+            color: #f0cc5a;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        .disclaimer-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .controls {
+                padding: 20px;
+            }
+
+            .category-filters {
+                justify-content: center;
+            }
+
+            .article-item {
+                flex-direction: column;
+            }
+
+            .article-image {
+                order: 1;
+                flex: none;
+                height: 200px;
+            }
+
+            .article-content {
+                order: 2;
+            }
+
+            .search-input {
+                padding: 16px 20px 16px 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ministry of Truth</h1>
+            <p>Information Control • Reality Revision • Truth Management</p>
+        </div>
+
+        <div id="status" class="status-bar">
+            <div class="status-error">Connecting to backend...</div>
+        </div>
+
+        <div class="controls">
+            <div class="mode-toggle-container">
+                <div class="mode-toggle">
+                    <div class="mode-option active" id="realMode">Real News</div>
+                    <div class="mode-option" id="ministryMode">Ministry Version</div>
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <div class="category-filters">
+                    <div class="filter-chip" data-category="headlines">Top Headlines</div>
+                    <div class="filter-chip" data-category="technology">Technology</div>
+                    <div class="filter-chip" data-category="business">Business</div>
+                    <div class="filter-chip" data-category="sports">Sports</div>
+                    <div class="filter-chip" data-category="entertainment">Entertainment</div>
+                    <div class="filter-chip" data-category="health">Health</div>
+                    <div class="filter-chip" data-category="science">Science</div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search for news articles...">
+                </div>
+            </div>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <div class="disclaimer">
+            <div class="disclaimer-title">Educational Satirical Project</div>
+            <div>The "Ministry Version" uses AI to transform news into Orwellian commentary for educational purposes. All transformed content is fictional.</div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURATION =====
+        const API_BASE_URL = 'http://localhost:8080/api';
+        
+        // ===== GLOBAL STATE =====
+        let currentArticles = [];
+        let isMinistryMode = false;
+        let transformationCount = 0;
+        let transformationCache = new Map();
+        const MAX_TRANSFORMATIONS = 15;
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Ministry of Truth - Professional Architecture');
+            console.log('API Base URL:', API_BASE_URL);
+            
+            initializeModeToggle();
+            initializeFilters();
+            testBackendConnection();
+            setupSearchInput();
+            loadTransformationCache();
+        });
+
+        // ===== BACKEND CONNECTION =====
+        async function testBackendConnection() {
+            showStatus('Connecting to backend...', 'error');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('Backend Connected', 'connected');
+                    console.log('Backend health check:', data);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Backend connection failed:', error);
+                showStatus('Backend Connection Failed', 'error');
+            }
+        }
+
+        // ===== MODE TOGGLE =====
+        function initializeModeToggle() {
+            const realMode = document.getElementById('realMode');
+            const ministryMode = document.getElementById('ministryMode');
+
+            realMode.addEventListener('click', () => switchMode(false));
+            ministryMode.addEventListener('click', () => switchMode(true));
+        }
+
+        function switchMode(ministry) {
+            isMinistryMode = ministry;
+            const realMode = document.getElementById('realMode');
+            const ministryMode = document.getElementById('ministryMode');
+            
+            realMode.classList.toggle('active', !ministry);
+            ministryMode.classList.toggle('active', ministry);
+            
+            console.log('Mode switched to:', ministry ? 'Ministry' : 'Real');
+            
+            if (currentArticles.length > 0) {
+                displayArticles(currentArticles);
+            }
+        }
+
+        // ===== FILTERS =====
+        function initializeFilters() {
+            const filterChips = document.querySelectorAll('.filter-chip');
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const category = chip.dataset.category;
+                    selectFilter(chip, category);
+                });
+            });
+        }
+
+        function selectFilter(chip, category) {
+            // Clear other active filters
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            
+            fetchNews(category);
+        }
+
+        function clearFilters() {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // ===== SEARCH =====
+        function setupSearchInput() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchNews();
+                }
+            });
+        }
+
+        async function searchNews() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            console.log('Searching for:', query);
+            showLoading('Searching archives...');
+            
+            try {
+                const url = `${API_BASE_URL}/news/search?q=${encodeURIComponent(query)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.articles && data.articles.length > 0) {
+                    currentArticles = data.articles;
+                    displayArticles(data.articles);
+                    showStatus(`Found ${data.articles.length} articles`, 'connected');
+                } else {
+                    showError('No articles found for your search.');
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('Search failed: ' + error.message);
+            }
+        }
+
+        // ===== NEWS FETCHING =====
+        async function fetchNews(category) {
+            console.log('Fetching news for category:', category);
+            showLoading('Loading articles...');
+            
+            try {
+                let url;
+                if (category === 'headlines') {
+                    url = `${API_BASE_URL}/news/headlines`;
+                } else {
+                    url = `${API_BASE_URL}/news/category/${category}`;
+                }
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.articles && data.articles.length > 0) {
+                    currentArticles = data.articles;
+                    displayArticles(data.articles);
+                    showStatus(`Found ${data.articles.length} articles`, 'connected');
+                } else {
+                    showError('No articles found for this category.');
+                }
+                
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                showError('Failed to fetch news: ' + error.message);
+            }
+        }
+
+        // ===== TRANSFORMATION & CACHING =====
+        function getCacheKey(title, description) {
+            return btoa(unescape(encodeURIComponent(title + '|' + description))).slice(0, 32);
+        }
+
+        function loadTransformationCache() {
+            try {
+                const cached = localStorage.getItem('ministry_cache');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    // Clean expired entries
+                    const now = Date.now();
+                    for (const [key, value] of Object.entries(data)) {
+                        if (now - value.timestamp < CACHE_DURATION) {
+                            transformationCache.set(key, value);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load cache:', error);
+            }
+        }
+
+        function saveTransformationCache() {
+            try {
+                const cacheObj = {};
+                transformationCache.forEach((value, key) => {
+                    cacheObj[key] = value;
+                });
+                localStorage.setItem('ministry_cache', JSON.stringify(cacheObj));
+            } catch (error) {
+                console.error('Failed to save cache:', error);
+            }
+        }
+
+        async function transformContent(title, description) {
+            const cacheKey = getCacheKey(title, description);
+            
+            // Check cache first
+            if (transformationCache.has(cacheKey)) {
+                const cached = transformationCache.get(cacheKey);
+                if (Date.now() - cached.timestamp < CACHE_DURATION) {
+                    console.log('Using cached transformation');
+                    return {
+                        ...cached.content,
+                        cached: true
+                    };
+                }
+            }
+
+            // Check transformation limits
+            if (transformationCount >= MAX_TRANSFORMATIONS) {
+                return {
+                    transformedTitle: '[MINISTRY APPROVED] ' + title,
+                    transformedDescription: '[MINISTRY APPROVED] ' + description,
+                    cached: false
+                };
+            }
+
+            try {
+                console.log('Transforming content via API...');
+                
+                const response = await fetch(`${API_BASE_URL}/transform`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: description
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                transformationCount++;
+                
+                const result = {
+                    transformedTitle: data.transformedTitle || '[MINISTRY APPROVED] ' + title,
+                    transformedDescription: data.transformedDesc || '[MINISTRY APPROVED] ' + description,
+                    cached: false
+                };
+
+                // Cache the result
+                transformationCache.set(cacheKey, {
+                    content: result,
+                    timestamp: Date.now()
+                });
+                saveTransformationCache();
+                
+                return result;
+                
+            } catch (error) {
+                console.error('Transform error:', error);
+                return {
+                    transformedTitle: '[MINISTRY APPROVED] ' + title,
+                    transformedDescription: '[MINISTRY APPROVED] ' + description,
+                    cached: false
+                };
+            }
+        }
+
+        // ===== ARTICLE DISPLAY WITH BATCH PROCESSING =====
+        async function displayArticles(articles) {
+            console.log('Displaying articles:', articles.length);
+            const resultsDiv = document.getElementById('results');
+            
+            let articlesHtml = `
+                <div class="results-header">
+                    <div class="results-count">${articles.length} articles found</div>
+                </div>
+                <div class="articles-list">
+            `;
+            
+            const validArticles = articles.slice(0, 20).filter(article => 
+                article.title && article.title !== '[Removed]'
+            );
+            
+            if (isMinistryMode) {
+                // Show loading message for transformations
+                showLoading('Transforming articles through Ministry processing...');
+                
+                // Process transformations in batches for better performance
+                const batchSize = 3;
+                const transformedArticles = [];
+                
+                for (let i = 0; i < validArticles.length; i += batchSize) {
+                    const batch = validArticles.slice(i, i + batchSize);
+                    const batchPromises = batch.map(async (article) => {
+                        const transformed = await transformContent(article.title, article.description);
+                        return {
+                            ...article,
+                            displayTitle: transformed.transformedTitle,
+                            displayDescription: transformed.transformedDescription,
+                            isCached: transformed.cached
+                        };
+                    });
+                    
+                    const batchResults = await Promise.all(batchPromises);
+                    transformedArticles.push(...batchResults);
+                    
+                    // Update progress
+                    const progress = Math.round((transformedArticles.length / validArticles.length) * 100);
+                    showLoading(`Transforming articles... ${progress}% complete`);
+                }
+                
+                // Now render all articles at once
+                renderArticleList(transformedArticles, true);
+                
+            } else {
+                // For real news, just render immediately
+                const realArticles = validArticles.map(article => ({
+                    ...article,
+                    displayTitle: article.title,
+                    displayDescription: article.description || 'No description available',
+                    isCached: false
+                }));
+                
+                renderArticleList(realArticles, false);
+            }
+        }
+
+        function renderArticleList(articles, isMinistry) {
+            const resultsDiv = document.getElementById('results');
+            
+            let articlesHtml = `
+                <div class="results-header">
+                    <div class="results-count">${articles.length} articles found</div>
+                </div>
+                <div class="articles-list">
+            `;
+            
+            for (const article of articles) {
+                const publishedDate = article.publishedAt ? 
+                    new Date(article.publishedAt).toLocaleDateString() : 'Unknown date';
+                const author = article.author || 'Unknown';
+                const source = article.source?.name || 'Unknown Source';
+                const imageUrl = article.urlToImage;
+                
+                articlesHtml += `
+                    <div class="article-item">
+                        <div class="article-content">
+                            <div class="article-labels">
+                                ${isMinistry ? '<div class="ministry-label">Ministry Version</div>' : ''}
+                                ${article.isCached ? '<div class="cached-label">Cached</div>' : ''}
+                            </div>
+                            <div class="article-source">${source}</div>
+                            <h3 class="article-title">${article.displayTitle}</h3>
+                            <p class="article-description">${article.displayDescription}</p>
+                            <div class="article-meta">
+                                <span>By ${author}</span>
+                                <span>${publishedDate}</span>
+                            </div>
+                            ${article.url ? `<a href="${article.url}" target="_blank" class="article-url">Read Original Article →</a>` : ''}
+                        </div>
+                        <div class="article-image">
+                            ${imageUrl ? 
+                                `<img src="${imageUrl}" alt="${article.title}" onerror="this.parentElement.innerHTML='<div class=\\'article-image-placeholder\\'>No Image</div>'">` 
+                                : '<div class="article-image-placeholder">No Image</div>'
+                            }
+                        </div>
+                    </div>
+                `;
+            }
+            
+            articlesHtml += '</div>';
+            
+            if (isMinistry && transformationCount >= MAX_TRANSFORMATIONS) {
+                articlesHtml += `
+                    <div style="text-align: center; margin-top: 20px; color: #7d8590; font-size: 0.9rem;">
+                        Daily transformation limit reached. Additional articles show as "Ministry Approved".
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = articlesHtml;
+            showStatus(`Found ${articles.length} articles`, 'connected');
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            if (type === 'connected') {
+                statusDiv.innerHTML = `<div class="status-connected">${message}</div>`;
+            } else {
+                statusDiv.innerHTML = `<div class="status-error">${message}</div>`;
+            }
+        }
+
+        function showLoading(message = 'Loading...') {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="loading">${message}</div>`;
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+            showStatus('Error occurred', 'error');
+        }
+
+        // Console info
+        console.log('Ministry of Truth - Professional Architecture');
+        console.log('Features: Caching, Professional UI, Google-style Layout');
+        console.log('Transformations remaining:', MAX_TRANSFORMATIONS - transformationCount);
+    </script>
+</body>
+</html>
