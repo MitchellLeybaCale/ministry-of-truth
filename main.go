@@ -241,7 +241,7 @@ func transformNews(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+
 		log.Printf("OpenAI API error - status: %d", resp.StatusCode)
 		http.Error(w, "Error from OpenAI API", http.StatusInternalServerError)
 		return
