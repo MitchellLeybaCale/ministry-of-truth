@@ -47,7 +47,7 @@ func loadConfig() (*Config, error) {
 // Global config variable
 var config *Config
 
-// Your existing structs (keep these as they are)
+// API response structures
 type NewsResponse struct {
 	Status       string    `json:"status"`
 	TotalResults int       `json:"totalResults"`
@@ -90,6 +90,7 @@ type Choice struct {
 	Message Message `json:"message"`
 }
 
+// CORS middleware for API access
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -106,12 +107,13 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Updated fetchNews function using config
+// Fetch news from NewsAPI using environment variable
 func fetchNews(endpoint string) (*NewsResponse, error) {
-	// Use the config instead of hardcoded API key
 	url := fmt.Sprintf("https://newsapi.org/v2%s&apiKey=%s", endpoint, config.NewsAPIKey)
 
-	log.Printf("Making request to: %s", strings.Replace(url, config.NewsAPIKey, "***API_KEY***", 1))
+	// Log request with masked API key for security
+	maskedURL := strings.Replace(url, config.NewsAPIKey, "[REDACTED]", 1)
+	log.Printf("Making request to: %s", maskedURL)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -126,7 +128,7 @@ func fetchNews(endpoint string) (*NewsResponse, error) {
 
 	log.Printf("NewsAPI response status: %d", resp.StatusCode)
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("NewsAPI response body: %s", string(body))
+		log.Printf("NewsAPI error - status: %d", resp.StatusCode)
 		return nil, fmt.Errorf("NewsAPI returned status %d", resp.StatusCode)
 	}
 
@@ -139,6 +141,7 @@ func fetchNews(endpoint string) (*NewsResponse, error) {
 	return &newsResponse, nil
 }
 
+// Get top headlines endpoint
 func getTopHeadlines(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -161,6 +164,7 @@ func getTopHeadlines(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newsResponse)
 }
 
+// Search news endpoint
 func searchNews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -181,7 +185,7 @@ func searchNews(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newsResponse)
 }
 
-// Updated transformNews function using config
+// Transform news using OpenAI API
 func transformNews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -224,7 +228,7 @@ func transformNews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use config for API key
+	// Use environment variable for API key
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.OpenAIAPIKey))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -238,7 +242,7 @@ func transformNews(w http.ResponseWriter, r *http.Request) {
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		log.Printf("OpenAI error response: %s", string(body))
+		log.Printf("OpenAI API error - status: %d", resp.StatusCode)
 		http.Error(w, "Error from OpenAI API", http.StatusInternalServerError)
 		return
 	}
@@ -261,6 +265,7 @@ func transformNews(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// Health check endpoint
 func healthCheck(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{
 		"status":  "healthy",
@@ -293,7 +298,7 @@ func main() {
 	r.HandleFunc("/health", healthCheck).Methods("GET")
 
 	// Serve static files
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 
 	log.Printf("Server starting on port %s", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, r))
