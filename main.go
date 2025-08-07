@@ -295,7 +295,7 @@ func main() {
 	r.HandleFunc("/api/news/headlines", getTopHeadlines).Methods("GET")
 	r.HandleFunc("/api/news/search", searchNews).Methods("GET")
 	r.HandleFunc("/api/transform", transformNews).Methods("POST")
-	r.HandleFunc("/health", healthCheck).Methods("GET")
+	r.HandleFunc("/api/health", healthCheck).Methods("GET")
 
 	// Serve static files
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
