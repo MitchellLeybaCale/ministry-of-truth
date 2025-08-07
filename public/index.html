@@ -468,7 +468,7 @@
 
     <script>
         // ===== CONFIGURATION =====
-        const API_BASE_URL = 'http://localhost:8080/api';
+        const API_BASE_URL = '/api';
         
         // ===== GLOBAL STATE =====
         let currentArticles = [];
@@ -608,7 +608,7 @@
                 if (category === 'headlines') {
                     url = `${API_BASE_URL}/news/headlines`;
                 } else {
-                    url = `${API_BASE_URL}/news/category/${category}`;
+                    url = `${API_BASE_URL}/news/headlines?category=${category}`;
                 }
                 
                 const response = await fetch(url);
@@ -714,8 +714,8 @@
                 transformationCount++;
                 
                 const result = {
-                    transformedTitle: data.transformedTitle || '[MINISTRY APPROVED] ' + title,
-                    transformedDescription: data.transformedDesc || '[MINISTRY APPROVED] ' + description,
+                    transformedTitle: data.transformedContent || '[MINISTRY APPROVED] ' + title,
+                    transformedDescription: data.transformedContent || '[MINISTRY APPROVED] ' + description,
                     cached: false
                 };
 
