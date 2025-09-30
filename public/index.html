@@ -216,7 +216,6 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(56, 139, 253, 0.1);
             width: 100%;
-            max-width: 1200px;
         }
 
         .results-count {
@@ -507,7 +506,7 @@
             showStatus('Connecting to backend...', 'error');
             
             try {
-                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/health`);
+                const response = await fetch('https://ministry-of-truth.onrender.com/health');
                 if (response.ok) {
                     const data = await response.json();
                     showStatus('Backend Connected', 'connected');
