@@ -145,7 +145,6 @@
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            justify-content: center;
         }
 
         .filter-chip {
@@ -468,7 +467,7 @@
 
     <script>
         // ===== CONFIGURATION =====
-        const API_BASE_URL = '/api';
+        const API_BASE_URL = 'https://ministry-of-truth.onrender.com';
         
         // ===== GLOBAL STATE =====
         let currentArticles = [];
@@ -608,7 +607,7 @@
                 if (category === 'headlines') {
                     url = `${API_BASE_URL}/news/headlines`;
                 } else {
-                    url = `${API_BASE_URL}/news/headlines?category=${category}`;
+                    url = `${API_BASE_URL}/news/category/${category}`;
                 }
                 
                 const response = await fetch(url);
@@ -714,8 +713,8 @@
                 transformationCount++;
                 
                 const result = {
-                    transformedTitle: data.transformedContent || '[MINISTRY APPROVED] ' + title,
-                    transformedDescription: data.transformedContent || '[MINISTRY APPROVED] ' + description,
+                    transformedTitle: data.transformedTitle || '[MINISTRY APPROVED] ' + title,
+                    transformedDescription: data.transformedDesc || '[MINISTRY APPROVED] ' + description,
                     cached: false
                 };
 
